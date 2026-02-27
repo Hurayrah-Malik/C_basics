@@ -69,7 +69,7 @@ void print_reg_value(struct CPU *cpu, int register_num) {
     //                 struct CPU *p      // declare a pointer to a CPU struct
     //                 p->field           // access struct field through a pointer (same as (*p).field)
     //                 &cpu               // pass address of cpu to a function
-    // -------------------------
+    // ------------------------
 
 
 int main() {
@@ -88,7 +88,7 @@ int main() {
     //while loop that goes over whole program in memory
     int running = 1;
     while (running) {
-        //get the opcode that the pointer is pointing to in memory
+        //get the opcode that the pointer is pointing to in  memory
         int opcode = cpu.memory[cpu.pc];
 
         switch (opcode) {
