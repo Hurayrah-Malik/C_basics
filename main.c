@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 enum Op { LOAD, ADD, PRINT, HALT };
 struct CPU {
@@ -8,21 +9,21 @@ struct CPU {
 };
 
 //print all registers and some memory
-void print_cpu_state(struct CPU cpu) {
+void print_cpu_state(struct CPU *cpu) {
     
     // print registers
     printf("=== REGISTERS ===\n");
     for (int i = 0; i < 8; i++) {
-        printf("R%d: %d\n", i, cpu.registers[i]);
+        printf("R%d: %d\n", i, cpu->registers[i]);
     }
 
     // print first 16 slots of memory
     printf("\n=== MEMORY (first 16) ===\n");
     for (int i = 0; i < 16; i++) {
-        printf("[%d]: %d\n", i, cpu.memory[i]);
+        printf("[%d]: %d\n", i, cpu->memory[i]);
     }
     
-    printf("\nPC: %d\n", cpu.pc);
+    printf("\nPC: %d\n", cpu->pc);
 
     
 }
@@ -73,8 +74,14 @@ void print_reg_value(struct CPU *cpu, int register_num) {
 
 
 int main() {
-    //create a cpu struct and initialize fill everything inside to 0
-    struct CPU cpu = {0};
+    //create a cpu struct pointer. calloc initialized everything to 0
+    // cpu          // 0x5000  (the address)
+    // *cpu         // the entire struct at 0x5000
+    // cpu->pc      // the pc field inside the struct at 0x5000
+    // (*cpu).pc    // exact same thing, just uglier
+
+    struct CPU *cpu = calloc(1, sizeof(struct CPU));
+
 
     //hard coded program
     int program[] = { LOAD, 0, 5,  LOAD, 1, 10,  ADD, 2, 1, 0,  PRINT, 2,  HALT };
@@ -82,46 +89,46 @@ int main() {
 
     //copy the program into memory
     for (int i = 0; i < len_program; i++) {
-        cpu.memory[i] = program[i];
+        cpu->memory[i] = program[i];
     }
 
     //while loop that goes over whole program in memory
     int running = 1;
     while (running) {
         //get the opcode that the pointer is pointing to in  memory
-        int opcode = cpu.memory[cpu.pc];
+        int opcode = cpu->memory[cpu->pc];
 
         switch (opcode) {
             case LOAD: {
-                load(&cpu, cpu.memory[cpu.pc + 1], cpu.memory[cpu.pc + 2]);
+                load(cpu, cpu->memory[cpu->pc + 1], cpu->memory[cpu->pc + 2]);
                 printf("calling LOAD \n");
-                cpu.pc += 3;
+                cpu->pc += 3;
                 break;
             }
             case ADD: {
-                add(&cpu, cpu.memory[cpu.pc + 1], cpu.memory[cpu.pc + 2],cpu.memory[cpu.pc + 3]);
+                add(cpu, cpu->memory[cpu->pc + 1], cpu->memory[cpu->pc + 2],cpu->memory[cpu->pc + 3]);
                 printf("calling ADD \n");
-                cpu.pc += 4;
+                cpu->pc += 4;
                 break;
 
             }
              case PRINT: {
                 printf("calling PRINT\n");
-                print_reg_value(&cpu,cpu.memory[cpu.pc+1]);
-                cpu.pc += 2;
+                print_reg_value(cpu,cpu->memory[cpu->pc+1]);
+                cpu->pc += 2;
                 break;
 
             }
              case HALT: {
                 printf("call HALT\n");
                 running = 0;
-                cpu.pc += 1;
+                cpu->pc += 1;
                 break;
 
             }
             default: {
             printf("some other command\n");
-            cpu.pc += 1;
+            cpu->pc += 1;
             
             }
         }
@@ -132,6 +139,6 @@ int main() {
     //print stuff from the cpu
     print_cpu_state(cpu);
     
-
+    free(cpu);
     return 0;
 }
